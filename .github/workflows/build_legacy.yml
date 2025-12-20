@@ -91,9 +91,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
-          name: "Doki Build ${{ steps.release_info.outputs.tag }}"
+          name: "Doki Legacy Build ${{ steps.release_info.outputs.tag }}"
           body: |
-            Automated Doki builds, generated on ${{ steps.release_info.outputs.formatted_date }}
+            Automated Doki Legacy builds, generated on ${{ steps.release_info.outputs.formatted_date }}
           files: legacy-release.apk
           fail_on_unmatched_files: true
         env:
