@@ -2,9 +2,6 @@ name: Build Release Artifact
 
 on:
   workflow_call:
-  
-env:
-  APK_PATH: app/build/outputs/apk/release/app-release.apk
 
 jobs:
   build:
@@ -38,7 +35,7 @@ jobs:
 
       - name: Build Release APK (Attempt 2) 💻
         run: >-
-          if [ ! -f ${{ env.APK_PATH }} ]; then
+          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
             pkill -f java &&
             ./gradlew assembleRelease -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
           else
@@ -48,7 +45,7 @@ jobs:
 
       - name: Build Release APK (Attempt 3) 💻
         run: >-
-          if [ ! -f ${{ env.APK_PATH }} ]; then
+          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
             pkill -f java &&
             ./gradlew assembleRelease -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
           else
@@ -60,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: ${{ env.APK_PATH }}
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 1
 
   release:
@@ -77,7 +74,7 @@ jobs:
         run: |
           echo "tag=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
           echo "formatted_date=$(date +'%Y/%m/%d')" >> $GITHUB_OUTPUT
-          mv app-release.apk release.apk
+          mv *.apk release.apk
 
       - name: Upload to release 🌐
         uses: softprops/action-gh-release@v2
