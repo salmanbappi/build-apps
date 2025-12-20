@@ -7,7 +7,3 @@ jobs:
   build_release:
     name: Trigger Yumemi builds 🚀
     uses: ./.github/workflows/build_release.yml
-
-  build_legacy:
-    name: Trigger Doki Legacy builds 🚀
-    uses: ./.github/workflows/build_legacy.yml

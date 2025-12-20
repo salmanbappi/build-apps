@@ -29,10 +29,3 @@ jobs:
     if: needs.check.outputs.should_build == 'true'
     uses: ./.github/workflows/build_release.yml
     secrets: inherit
-
-  build_legacy:
-    name: 🚀 Trigger Doki Legacy builds
-    needs: check
-    if: needs.check.outputs.should_build == 'true'
-    uses: ./.github/workflows/build_legacy.yml
-    secrets: inherit

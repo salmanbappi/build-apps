@@ -1,9 +1,5 @@
 <div align="center">
 
-<a href="#">
-    <img src="./assets/Doki.png" alt="Doki logo" title="Doki logo" width=30%/>
-</a>
-
 # [Yumemi](#) Building Guide
 </div>
 
