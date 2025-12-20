@@ -1,9 +1,9 @@
-name: Trigger Yumemi builds
+name: Trigger Nullum builds
 
 on:
   workflow_dispatch:
 
 jobs:
   build_release:
-    name: Trigger Yumemi builds 🚀
+    name: Trigger Nullum builds 🚀
     uses: ./.github/workflows/build_release.yml

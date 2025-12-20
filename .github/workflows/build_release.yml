@@ -91,9 +91,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
-          name: "Yumemi Build ${{ steps.release_info.outputs.tag }}"
+          name: "Nullum Build ${{ steps.release_info.outputs.tag }}"
           body: |
-            Automated Yumemi builds, generated on ${{ steps.release_info.outputs.formatted_date }}
+            Automated Nullum builds, generated on ${{ steps.release_info.outputs.formatted_date }}
           files: release.apk
           fail_on_unmatched_files: true
         env:

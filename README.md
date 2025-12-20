@@ -1,7 +1,7 @@
-# Automation for Yumemi (Source code)
+# Automation for Nullum (Source code)
 
 > [!IMPORTANT]
-> This repository provides automated builds for **夢見 [Yumemi]**, the successor to Doki.
+> This repository provides automated builds for **Nullum**, the successor to Doki.
 > You can find the Yumemi source code [here](https://github.com/YumemiProject/Yumemi).
 > Thanks to Jerry, Draken and [Yaka Team](https://github.com/YakaTeam) for their contributions.
 

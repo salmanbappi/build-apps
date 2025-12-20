@@ -24,7 +24,7 @@ jobs:
           fi
 
   build_release:
-    name: 🚀 Trigger Yumemi builds
+    name: 🚀 Trigger Nullum builds
     needs: check
     if: needs.check.outputs.should_build == 'true'
     uses: ./.github/workflows/build_release.yml
