@@ -13,8 +13,8 @@ jobs:
       - name: Pull upstream 🌏
         uses: actions/checkout@v4
         with:
-          repository: DokiTeam/Doki
-          ref: base
+          repository: YumemiProject/Yumemi
+          ref: devel
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -35,7 +35,7 @@ jobs:
           ./gradlew assembleRelease \
           -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) \
           -Dgh_username=${{ github.repository_owner }} \
-          -Dexts=$(curl -s https://api.github.com/repos/DokiTeam/doki-exts/commits/base -H "Accept: application/vnd.github.sha" | cut -c -10)
+          -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
         continue-on-error: true
 
       - name: Build Release APK (Attempt 2) 💻
@@ -45,7 +45,7 @@ jobs:
             ./gradlew assembleRelease \
           -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) \
           -Dgh_username=${{ github.repository_owner }} \
-          -Dexts=$(curl -s https://api.github.com/repos/DokiTeam/doki-exts/commits/base -H "Accept: application/vnd.github.sha" | cut -c -10)
+          -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
           else
             echo "✅ Release build already exists, skipping build attempt 2";
           fi
@@ -58,7 +58,7 @@ jobs:
             ./gradlew assembleRelease \
           -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) \
           -Dgh_username=${{ github.repository_owner }} \
-          -Dexts=$(curl -s https://api.github.com/repos/DokiTeam/doki-exts/commits/base -H "Accept: application/vnd.github.sha" | cut -c -10)
+          -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
           else
             echo "✅ Release build already exists, skipping build attempt 3";
           fi
@@ -91,9 +91,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
-          name: "Doki Build ${{ steps.release_info.outputs.tag }}"
+          name: "Yumemi Build ${{ steps.release_info.outputs.tag }}"
           body: |
-            Automated Doki builds, generated on ${{ steps.release_info.outputs.formatted_date }}
+            Automated Yumemi builds, generated on ${{ steps.release_info.outputs.formatted_date }}
           files: release.apk
           fail_on_unmatched_files: true
         env:

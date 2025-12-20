@@ -4,16 +4,16 @@
     <img src="./assets/Doki.png" alt="Doki logo" title="Doki logo" width=30%/>
 </a>
 
-# [Doki](#) Building Guide
+# [Yumemi](#) Building Guide
 </div>
 
 <details open="open">
     <summary>Table of contents</summary>
     <ol>
         <li><a href="#how-it-works">How does this repository work?</a></li>
-        <li><a href="#quick-guide">How can users get Doki without coding knowledge?</a></li>
-        <li><a href="#local-build">How can developers / contributors build Doki locally?</a></li>
-        <li><a href="#build-with-github-codespaces">How to build Doki with GitHub Codespaces (pre-installed environment)?</a></li>
+        <li><a href="#quick-guide">How can users get Yumemi without coding knowledge?</a></li>
+        <li><a href="#local-build">How can developers / contributors build Yumemi locally?</a></li>
+        <li><a href="#build-with-github-codespaces">How to build Yumemi with GitHub Codespaces (pre-installed environment)?</a></li>
         <li><a href="#license">License</a></li>
         <li><a href="#need-help">Need help ?</a></li>
     </ol>
@@ -46,7 +46,7 @@ If you prefer a local build:
 > Signed CI builds require secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
 > Maintainers: add these in your fork's Settings → Secrets and variables → Actions.
 
-## Build with GitHub Codespaces
+## Build with Yumemi Codespaces
 
 TODO
 

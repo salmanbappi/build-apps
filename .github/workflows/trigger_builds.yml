@@ -1,13 +1,13 @@
-name: Trigger Doki builds
+name: Trigger Yumemi builds
 
 on:
   workflow_dispatch:
 
 jobs:
   build_release:
-    name: Trigger Release builds 🚀
+    name: Trigger Yumemi builds 🚀
     uses: ./.github/workflows/build_release.yml
 
   build_legacy:
-    name: Trigger Legacy builds 🚀
+    name: Trigger Doki Legacy builds 🚀
     uses: ./.github/workflows/build_legacy.yml

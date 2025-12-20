@@ -1,39 +1,39 @@
-# Automation for Doki (Source code)
+# Automation for Yumemi (Source code)
 
 > [!IMPORTANT]
-> We have officially moved to 夢見 [Project], you can find us [here](https://github.com/YumemiProject) (for source code).
-> Thanks to Jerry, Draken and [Yaka Team](https://github.com/YakaTeam) for helping us release that app.
-> You can find and download 夢見 [Project] at [here](https://github.com/YakaTeam/). Shout out to Yaka Team!
+> This repository provides automated builds for **夢見 [Yumemi]**, the successor to Doki.
+> You can find the Yumemi source code [here](https://github.com/YumemiProject/Yumemi).
+> Thanks to Jerry, Draken and [Yaka Team](https://github.com/YakaTeam) for their contributions.
 
 ### Please give the repo a :star:
 
 ### Usage
-**👉 Please follow [this document](https://github.com/DokiTeam/build-apps/tree/global/GUIDE.md) to know how this repository works.**
+**👉 Please follow [this document](./GUIDE.md) to know how this repository works.**
 
 ### Contribute
-**👋 You can contribute by push your patches about [these workflows](https://github.com/DokiTeam/build-apps/tree/global/.github/workflows) (Actions) to this repository.**
+**👋 You can contribute by push your patches about [these workflows](./.github/workflows) (Actions) to this repository.**
 
 -----------------
 
-### Doki (Source code)
+### Yumemi (Source code)
 
-https://github.com/DokiTeam/Doki
+https://github.com/YumemiProject/Yumemi
 
-### Extensions (Source code)
+### Parsers (Source code)
 
-https://github.com/DokiTeam/doki-exts
+https://github.com/YakaTeam/kotatsu-parsers
 
 ### Report app issues
 
-https://github.com/DokiTeam/Doki/issues/new/
+https://github.com/YumemiProject/Yumemi/issues/new/
 
 ### Report build issues
 
-https://github.com/DokiTeam/build-apps/issues/new
+https://github.com/salmanbappi/build-apps/issues/new
 
-### Report extension issues
+### Report parser issues
 
-https://github.com/DokiTeam/doki-exts/issues/new/
+https://github.com/YakaTeam/kotatsu-parsers/issues/new/
 
 ****
 
