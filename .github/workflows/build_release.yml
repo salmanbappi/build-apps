@@ -32,6 +32,7 @@ jobs:
 
       - name: Build Release APK (Attempt 1) 💻
         run: |
+          chmod +x gradlew
           ./gradlew assembleRelease \
           -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) \
           -Dgh_username=${{ github.repository_owner }} \
