@@ -13,6 +13,10 @@
 ### Contribute
 **👋 You can contribute by push your patches about [these workflows](./.github/workflows) (Actions) to this repository.**
 
+### Nightly Builds
+**🌙 Want to try the latest features? Check out the [Nightly Builds](../../releases/tag/nightly).**
+**⚠️ Warning: Nightly builds may be unstable and contain bugs.**
+
 -----------------
 
 ### Yumemi (Source code)

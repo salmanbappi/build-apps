@@ -1,0 +1,178 @@
+name: Build Nightly
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull upstream 🌏
+        uses: actions/checkout@v4
+        with:
+          repository: YumemiProject/Yumemi
+          ref: devel
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply Scroller Patch 🩹
+        run: |
+          if [ -f "automation_scripts/scroller.patch" ]; then
+            git apply automation_scripts/scroller.patch
+            echo "✅ Scroller patch applied"
+          else
+            echo "⚠️ Scroller patch not found"
+          fi
+
+      - name: Checkout Automation Scripts 🛠️
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          path: automation_scripts
+          ref: global
+
+      - name: Customize App (Nightly) 🎨
+        run: |
+          echo "🎨 Applying Customizations for Nightly..."
+          
+          # 1. Update Version to Nightly and Java/Kotlin target to 17
+          sed -i "s/sourceCompatibility JavaVersion.VERSION_11/sourceCompatibility JavaVersion.VERSION_17/" app/build.gradle
+          sed -i "s/targetCompatibility JavaVersion.VERSION_11/targetCompatibility JavaVersion.VERSION_17/" app/build.gradle
+          sed -i "s/jvmTarget = JavaVersion.VERSION_11.toString()/jvmTarget = JavaVersion.VERSION_17.toString()/" app/build.gradle
+          
+          # Set version name to include date/nightly
+          sed -i "s/versionName = '.*'/versionName = 'Nightly-$(date +%Y%m%d)'/" app/build.gradle
+
+          # Attempt to change applicationId for side-by-side install
+          # Try double quotes
+          sed -i 's/applicationId "\([^"]*\)"/applicationId "\1.nightly"/' app/build.gradle
+          # Try single quotes
+          sed -i "s/applicationId '\([^']*\)'/applicationId '\1.nightly'/" app/build.gradle
+          
+          echo "✅ Version updated and applicationId modified (if found)"
+          
+          # 2. Update Logo (Fixing stretching and blurriness/zoom-out)
+          sudo apt-get update -y && sudo apt-get install -y webp imagemagick
+          
+          declare -A sizes=( ["mdpi"]=48 ["hdpi"]=72 ["xhdpi"]=96 ["xxhdpi"]=144 ["xxxhdpi"]=192 )
+          SOURCE_LOGO="automation_scripts/assets/ic_launcher.png"
+          
+          if [ -f "$SOURCE_LOGO" ]; then
+            for density in "${!sizes[@]}"; do
+              size=${sizes[$density]}
+              target_dir="app/src/main/res/mipmap-$density"
+              if [ -d "$target_dir" ]; then
+                 echo "   -> Processing logo for $density ($size px)..."
+                 # Zoom out effect: Resize logo to 75% of the target size and center it
+                 inner_size=$((size * 75 / 100))
+                 convert "$SOURCE_LOGO" -background none -thumbnail "${inner_size}x${inner_size}" -gravity center -extent "${size}x${size}" -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
+                 cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_round.webp"
+                 cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_foreground.webp"
+              fi
+            done
+            echo "✅ Logo updated (zoomed out & sharp)"
+          else
+            echo "⚠️ Custom logo not found at $SOURCE_LOGO"
+          fi
+
+      - name: Set up JDK 🚀
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle 🚀
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Android SDK 🚀
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Signing Key 🔐
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using Release Keystore from secrets"
+            echo "$KEYSTORE_BASE64" | base64 --decode > signing.jks
+            echo "store_file=$(pwd)/signing.jks" >> $GITHUB_OUTPUT
+            echo "store_password=$KEYSTORE_PASSWORD" >> $GITHUB_OUTPUT
+            echo "key_alias=$KEY_ALIAS" >> $GITHUB_OUTPUT
+            echo "key_password=$KEY_PASSWORD" >> $GITHUB_OUTPUT
+          else
+            echo "Using Debug Keystore (Fallback)"
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            echo "store_file=$(pwd)/debug.keystore" >> $GITHUB_OUTPUT
+            echo "store_password=android" >> $GITHUB_OUTPUT
+            echo "key_alias=androiddebugkey" >> $GITHUB_OUTPUT
+            echo "key_password=android" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Nightly APK (Attempt 1) 💻
+        run: |
+          chmod +x gradlew
+          ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
+        continue-on-error: true
+
+      - name: Build Nightly APK (Attempt 2) 💻
+        run: >-
+          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
+            pkill -f java &&
+            ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
+          else
+            echo "✅ Release build already exists, skipping build attempt 2";
+          fi
+        continue-on-error: true
+
+      - name: Build Nightly APK (Attempt 3) 💻
+        run: >-
+          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
+            pkill -f java &&
+            ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
+          else
+            echo "✅ Release build already exists, skipping build attempt 3";
+          fi
+        continue-on-error: false
+
+      - name: Upload APK artifact 📤
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-apk
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 1
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact 📥
+        uses: actions/download-artifact@v4
+        with:
+          name: nightly-apk
+
+      - name: Generate package 📦
+        id: release_info
+        run: |
+          echo "tag=nightly" >> $GITHUB_OUTPUT
+          echo "formatted_date=$(date +'%Y/%m/%d')" >> $GITHUB_OUTPUT
+          mv *.apk nullum-nightly.apk
+
+      - name: Upload to release 🌐
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.tag }}
+          name: "Nullum Nightly"
+          body: |
+            Automated Nullum Nightly build, generated on ${{ steps.release_info.outputs.formatted_date }}.
+            **⚠️ This is a Nightly build. It may be unstable.**
+          files: nullum-nightly.apk
+          prerelease: true
+          make_latest: false
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
