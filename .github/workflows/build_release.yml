@@ -22,7 +22,7 @@ jobs:
           path: automation_scripts
           ref: global
 
-      - name: Customize App (Version & Logo) 🎨
+      - name: Customize App (Version, Logo & Splash) 🎨
         run: |
           echo "🎨 Applying Customizations..."
           
@@ -30,26 +30,40 @@ jobs:
           sed -i "s/versionName = '.*'/versionName = '1.0'/" app/build.gradle
           echo "✅ Version updated to 1.0"
           
-          # 2. Update Logo
+          # 2. Update Logo (Fixing stretching)
           sudo apt-get update -y && sudo apt-get install -y webp imagemagick
           
           declare -A sizes=( ["mdpi"]=48 ["hdpi"]=72 ["xhdpi"]=96 ["xxhdpi"]=144 ["xxxhdpi"]=192 )
-          SOURCE_LOGO="automation_scripts/assets/ic_launcher.jpg"
+          SOURCE_LOGO="automation_scripts/assets/ic_launcher.png"
           
           if [ -f "$SOURCE_LOGO" ]; then
             for density in "${!sizes[@]}"; do
               size=${sizes[$density]}
               target_dir="app/src/main/res/mipmap-$density"
               if [ -d "$target_dir" ]; then
-                 echo "   -> Processing $density ($size px)..."
-                 convert "$SOURCE_LOGO" -resize ${size}x${size} -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
+                 echo "   -> Processing logo for $density ($size px)..."
+                 # Use -resize with extent and background to prevent stretching
+                 convert "$SOURCE_LOGO" -resize ${size}x${size} -background none -gravity center -extent ${size}x${size} -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_round.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_foreground.webp"
               fi
             done
-            echo "✅ Logo updated"
+            echo "✅ Logo updated (no stretching)"
           else
             echo "⚠️ Custom logo not found at $SOURCE_LOGO"
+          fi
+
+          # 3. Update Loading Screen (Splash)
+          SOURCE_SPLASH="automation_scripts/assets/loading.png"
+          if [ -f "$SOURCE_SPLASH" ]; then
+            echo "   -> Applying custom loading image..."
+            cp "$SOURCE_SPLASH" app/src/main/res/drawable/loading_custom.png
+            
+            # Update themes to use the new splash icon
+            find app/src/main/res/values* -name "themes.xml" -exec sed -i 's/@drawable\/avd_splash/@drawable\/loading_custom/g' {} +
+            echo "✅ Loading screen updated"
+          else
+            echo "⚠️ Custom loading image not found at $SOURCE_SPLASH"
           fi
 
       - name: Set up JDK 🚀
