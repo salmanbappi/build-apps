@@ -42,7 +42,7 @@ jobs:
               target_dir="app/src/main/res/mipmap-$density"
               if [ -d "$target_dir" ]; then
                  echo "   -> Processing $density ($size px)..."
-                 convert "$SOURCE_LOGO" -resize ${size}x${size} -quality 100 define:webp:lossless=true "$target_dir/ic_launcher.webp"
+                 convert "$SOURCE_LOGO" -resize ${size}x${size} -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_round.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_foreground.webp"
               fi
