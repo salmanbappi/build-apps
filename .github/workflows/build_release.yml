@@ -27,16 +27,13 @@ jobs:
           echo "🎨 Applying Customizations..."
           
           # 1. Update Version to 1.0 and Java/Kotlin target to 17
-          # Upgrade Java compatibility to 17
           sed -i "s/sourceCompatibility JavaVersion.VERSION_11/sourceCompatibility JavaVersion.VERSION_17/" app/build.gradle
           sed -i "s/targetCompatibility JavaVersion.VERSION_11/targetCompatibility JavaVersion.VERSION_17/" app/build.gradle
-          # Upgrade Kotlin jvmTarget to 17
           sed -i "s/jvmTarget = JavaVersion.VERSION_11.toString()/jvmTarget = JavaVersion.VERSION_17.toString()/" app/build.gradle
-          
           sed -i "s/versionName = '.*'/versionName = '1.0'/" app/build.gradle
           echo "✅ Version updated to 1.0 and JVM target set to 17"
           
-          # 2. Update Logo (Fixing stretching)
+          # 2. Update Logo (Fixing stretching and blurriness/zoom-out)
           sudo apt-get update -y && sudo apt-get install -y webp imagemagick
           
           declare -A sizes=( ["mdpi"]=48 ["hdpi"]=72 ["xhdpi"]=96 ["xxhdpi"]=144 ["xxxhdpi"]=192 )
@@ -48,30 +45,28 @@ jobs:
               target_dir="app/src/main/res/mipmap-$density"
               if [ -d "$target_dir" ]; then
                  echo "   -> Processing logo for $density ($size px)..."
-                 # Use -resize with extent and background to prevent stretching
-                 convert "$SOURCE_LOGO" -resize ${size}x${size} -background none -gravity center -extent ${size}x${size} -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
+                 # Zoom out effect: Resize logo to 75% of the target size and center it
+                 inner_size=$((size * 75 / 100))
+                 convert "$SOURCE_LOGO" -background none -thumbnail "${inner_size}x${inner_size}" -gravity center -extent "${size}x${size}" -quality 100 -define webp:lossless=true "$target_dir/ic_launcher.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_round.webp"
                  cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_foreground.webp"
               fi
             done
-            echo "✅ Logo updated (no stretching)"
+            echo "✅ Logo updated (zoomed out & sharp)"
           else
             echo "⚠️ Custom logo not found at $SOURCE_LOGO"
           fi
 
-          # 3. Update Loading Screen (Splash)
+          # 3. Update Loading Screen (Splash) - Fixing stretching
           SOURCE_SPLASH="automation_scripts/assets/loading.png"
           if [ -f "$SOURCE_SPLASH" ]; then
             echo "   -> Applying custom loading image..."
-            # Create the loading_custom drawable from the source image
-            # We want to avoid stretching here too, so we'll use a layered approach if needed, 
-            # but for now let's just copy the file and let Android handle it.
-            cp "$SOURCE_SPLASH" app/src/main/res/drawable/loading_custom.png
+            # Process the loading image into a 512x512 square to prevent stretching in Splash API
+            convert "$SOURCE_SPLASH" -background none -thumbnail "512x512" -gravity center -extent "512x512" app/src/main/res/drawable/loading_custom.png
             
             # Update themes to use the new splash icon
-            # Some themes are in values-v31, values-night-v31 etc.
             find app/src/main/res/values* -name "themes.xml" -exec sed -i 's/@drawable\/avd_splash/@drawable\/loading_custom/g' {} +
-            echo "✅ Loading screen updated"
+            echo "✅ Loading screen updated (no stretching)"
           else
             echo "⚠️ Custom loading image not found at $SOURCE_SPLASH"
           fi
