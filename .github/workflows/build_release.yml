@@ -15,6 +15,43 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout Automation Scripts 🛠️
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          path: automation_scripts
+          ref: global
+
+      - name: Customize App (Version & Logo) 🎨
+        run: |
+          echo "🎨 Applying Customizations..."
+          
+          # 1. Update Version to 1.0
+          sed -i "s/versionName = '.*'/versionName = '1.0'/" app/build.gradle
+          echo "✅ Version updated to 1.0"
+          
+          # 2. Update Logo
+          sudo apt-get update -y && sudo apt-get install -y webp imagemagick
+          
+          declare -A sizes=( ["mdpi"]=48 ["hdpi"]=72 ["xhdpi"]=96 ["xxhdpi"]=144 ["xxxhdpi"]=192 )
+          SOURCE_LOGO="automation_scripts/assets/ic_launcher.jpg"
+          
+          if [ -f "$SOURCE_LOGO" ]; then
+            for density in "${!sizes[@]}"; do
+              size=${sizes[$density]}
+              target_dir="app/src/main/res/mipmap-$density"
+              if [ -d "$target_dir" ]; then
+                 echo "   -> Processing $density ($size px)..."
+                 convert "$SOURCE_LOGO" -resize ${size}x${size} -quality 100 define:webp:lossless=true "$target_dir/ic_launcher.webp"
+                 cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_round.webp"
+                 cp "$target_dir/ic_launcher.webp" "$target_dir/ic_launcher_foreground.webp"
+              fi
+            done
+            echo "✅ Logo updated"
+          else
+            echo "⚠️ Custom logo not found at $SOURCE_LOGO"
+          fi
+
       - name: Set up JDK 🚀
         uses: actions/setup-java@v4
         with:
