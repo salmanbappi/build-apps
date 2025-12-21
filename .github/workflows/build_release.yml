@@ -30,14 +30,14 @@ jobs:
       - name: Build Release APK (Attempt 1) 💻
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
+          ./gradlew -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
         continue-on-error: true
 
       - name: Build Release APK (Attempt 2) 💻
         run: >-
           if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
             pkill -f java &&
-            ./gradlew assembleRelease -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
+            ./gradlew -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
           else
             echo "✅ Release build already exists, skipping build attempt 2";
           fi
@@ -47,7 +47,7 @@ jobs:
         run: >-
           if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
             pkill -f java &&
-            ./gradlew assembleRelease -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10)
+            ./gradlew -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
           else
             echo "✅ Release build already exists, skipping build attempt 3";
           fi
