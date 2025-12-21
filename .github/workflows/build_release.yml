@@ -26,9 +26,15 @@ jobs:
         run: |
           echo "🎨 Applying Customizations..."
           
-          # 1. Update Version to 1.0
+          # 1. Update Version to 1.0 and Java/Kotlin target to 17
+          # Upgrade Java compatibility to 17
+          sed -i "s/sourceCompatibility JavaVersion.VERSION_11/sourceCompatibility JavaVersion.VERSION_17/" app/build.gradle
+          sed -i "s/targetCompatibility JavaVersion.VERSION_11/targetCompatibility JavaVersion.VERSION_17/" app/build.gradle
+          # Upgrade Kotlin jvmTarget to 17
+          sed -i "s/jvmTarget = JavaVersion.VERSION_11.toString()/jvmTarget = JavaVersion.VERSION_17.toString()/" app/build.gradle
+          
           sed -i "s/versionName = '.*'/versionName = '1.0'/" app/build.gradle
-          echo "✅ Version updated to 1.0"
+          echo "✅ Version updated to 1.0 and JVM target set to 17"
           
           # 2. Update Logo (Fixing stretching)
           sudo apt-get update -y && sudo apt-get install -y webp imagemagick
@@ -57,9 +63,13 @@ jobs:
           SOURCE_SPLASH="automation_scripts/assets/loading.png"
           if [ -f "$SOURCE_SPLASH" ]; then
             echo "   -> Applying custom loading image..."
+            # Create the loading_custom drawable from the source image
+            # We want to avoid stretching here too, so we'll use a layered approach if needed, 
+            # but for now let's just copy the file and let Android handle it.
             cp "$SOURCE_SPLASH" app/src/main/res/drawable/loading_custom.png
             
             # Update themes to use the new splash icon
+            # Some themes are in values-v31, values-night-v31 etc.
             find app/src/main/res/values* -name "themes.xml" -exec sed -i 's/@drawable\/avd_splash/@drawable\/loading_custom/g' {} +
             echo "✅ Loading screen updated"
           else
