@@ -26,6 +26,18 @@ jobs:
         run: |
           echo "🎨 Applying Customizations..."
           
+          # 0. Inject Gemini Features
+          if [ -f "automation_scripts/automation_scripts/inject_features.sh" ]; then
+             chmod +x automation_scripts/automation_scripts/inject_features.sh
+             ./automation_scripts/automation_scripts/inject_features.sh
+          elif [ -f "automation_scripts/inject_features.sh" ]; then
+             # Depending on checkout path
+             chmod +x automation_scripts/inject_features.sh
+             ./automation_scripts/inject_features.sh
+          else
+             echo "⚠️ Feature injection script not found"
+          fi
+
           # 1. Update Version to 1.0 and Java/Kotlin target to 17
           sed -i "s/sourceCompatibility JavaVersion.VERSION_11/sourceCompatibility JavaVersion.VERSION_17/" app/build.gradle
           sed -i "s/targetCompatibility JavaVersion.VERSION_11/targetCompatibility JavaVersion.VERSION_17/" app/build.gradle
@@ -108,30 +120,28 @@ jobs:
           fi
 
       - name: Build Release APK (Attempt 1) 💻
+        id: build_attempt_1
         run: |
           chmod +x gradlew
           ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
         continue-on-error: true
 
-      - name: Build Release APK (Attempt 2) 💻
-        run: >-
-          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
-            pkill -f java &&
-            ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
-          else
-            echo "✅ Release build already exists, skipping build attempt 2";
-          fi
+      - name: Auto-Fix Build (Attempt 2 - Clean & Retry) 🔧
+        if: steps.build_attempt_1.outcome == 'failure'
+        run: |
+          echo "⚠️ Build failed. Running auto-fix (clean)..."
+          ./gradlew clean
+          echo "🔄 Retrying build..."
+          ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
         continue-on-error: true
 
-      - name: Build Release APK (Attempt 3) 💻
-        run: >-
-          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
-            pkill -f java &&
-            ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
-          else
-            echo "✅ Release build already exists, skipping build attempt 3";
-          fi
-        continue-on-error: false
+      - name: Final Build Attempt (Attempt 3) 🚀
+        if: failure()
+        run: |
+           echo "⚠️ Previous attempts failed. Trying one last time..."
+           # Kill any lingering daemons
+           pkill -f java || true
+           ./gradlew -Pandroid.injected.signing.store.file=${{ steps.sign.outputs.store_file }} -Pandroid.injected.signing.store.password=${{ steps.sign.outputs.store_password }} -Pandroid.injected.signing.key.alias=${{ steps.sign.outputs.key_alias }} -Pandroid.injected.signing.key.password=${{ steps.sign.outputs.key_password }} -Dtg_backup_bot_token=$(curl -s https://dragonx943.github.io/waydroid_x86_64/value.json) -Dgh_username=${{ github.repository_owner }} -DparsersVersionOverride=$(curl -s https://api.github.com/repos/YakaTeam/kotatsu-parsers/commits/master -H "Accept: application/vnd.github.sha" | cut -c -10) assembleRelease
 
       - name: Upload APK artifact 📤
         uses: actions/upload-artifact@v4
