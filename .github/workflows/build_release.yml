@@ -165,14 +165,17 @@ jobs:
           echo "tag=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
           echo "formatted_date=$(date +'%Y/%m/%d')" >> $GITHUB_OUTPUT
           mv *.apk release.apk
+          if [ -f "gemini_summary.md" ]; then
+            cat gemini_summary.md >> release_notes.md
+          fi
+          echo "Automated Nullum build generated on $(date +'%Y/%m/%d')" >> release_notes.md
 
       - name: Upload to release 🌐
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
           name: "Nullum Build ${{ steps.release_info.outputs.tag }}"
-          body: |
-            Automated Nullum builds, generated on ${{ steps.release_info.outputs.formatted_date }}
+          body_path: release_notes.md
           files: release.apk
           fail_on_unmatched_files: true
         env:

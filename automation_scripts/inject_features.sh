@@ -68,3 +68,21 @@ else
 fi
 
 echo "✅ Feature Injection Complete"
+
+
+
+# Generate a summary for the GitHub Release body
+
+cat > gemini_summary.md <<EOF
+
+### 🤖 Gemini AI Enhancements
+
+- **Feature:** Added 'Gemini Optimized' badge in About Settings.
+
+- **Function:** Injected automated click listener for performance verification.
+
+- **Optimization:** Enabled Gradle Parallel Execution & Build Caching.
+
+- **Environment:** Patched build system to Java 17/21 compatibility.
+
+EOF
