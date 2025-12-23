@@ -4,6 +4,7 @@
 APP_SETTINGS="app/src/main/kotlin/org/koitharu/kotatsu/core/prefs/AppSettings.kt"
 PREF_ABOUT="app/src/main/res/xml/pref_about.xml"
 ABOUT_FRAGMENT="app/src/main/kotlin/org/koitharu/kotatsu/settings/about/AboutSettingsFragment.kt"
+GRADLE_PROPS="gradle.properties"
 
 echo "💉 Injecting Gemini Optimized Features..."
 
@@ -43,6 +44,27 @@ else
 		}
 ' "$ABOUT_FRAGMENT"
     echo "  -> Added Click Listener to AboutSettingsFragment.kt"
+fi
+
+echo "🚀 Injecting Performance Optimizations..."
+
+# 4. Optimize gradle.properties
+if [ -f "$GRADLE_PROPS" ]; then
+    # Ensure parallel execution is on
+    if ! grep -q "org.gradle.daemon=true" "$GRADLE_PROPS"; then
+        echo "org.gradle.daemon=true" >> "$GRADLE_PROPS"
+        echo "  -> Enabled Gradle Daemon"
+    fi
+    
+    # Enable build cache if missing
+    if ! grep -q "org.gradle.caching=true" "$GRADLE_PROPS"; then
+        echo "org.gradle.caching=true" >> "$GRADLE_PROPS"
+        echo "  -> Enabled Build Caching"
+    fi
+    
+    echo "  -> Performance tweaks applied to gradle.properties"
+else
+    echo "⚠️ gradle.properties not found, skipping optimizations."
 fi
 
 echo "✅ Feature Injection Complete"
